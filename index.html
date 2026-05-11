@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CondoMeet</title>
+<meta name="version" content="2026-05-11">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="screen">
+  <div class="auth-card">
+    <div class="logo">🏢</div>
+    <h1>CondoMeet</h1>
+    <p class="subtitle">Entre na sua conta</p>
+    <div class="alert alert-error" id="login-err"></div>
+    <div class="form-group"><label>Email</label><input type="email" id="l-email" placeholder="email@exemplo.com" onkeydown="if(event.key==='Enter')$i('l-pw').focus()"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="l-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">Entrar</button>
+    <div style="text-align:center;margin-top:14px;font-size:.84rem">
+      <a href="#" onclick="showScreen('forgot-screen')" style="color:var(--primary)">Esqueci a password</a>
+      &nbsp;·&nbsp;
+      <a href="#" onclick="showScreen('register-screen')" style="color:var(--primary)">Criar conta</a>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div id="register-screen" class="screen">
+  <div class="auth-card">
+    <div class="logo">🏢</div>
+    <h1>Criar Conta</h1>
+    <p class="subtitle">Registe-se no condomínio</p>
+    <div class="alert alert-error" id="reg-err"></div>
+    <div class="input-row">
+      <div class="form-group"><label>Nome completo</label><input type="text" id="r-name" placeholder="João Silva"></div>
+      <div class="form-group"><label>Fração</label><input type="text" id="r-fraction" placeholder="3B"></div>
+    </div>
+    <div class="form-group"><label>Email</label><input type="email" id="r-email" placeholder="email@exemplo.com"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="r-pw" placeholder="Mínimo 6 caracteres"></div>
+    <div class="form-group"><label>Confirmar password</label><input type="password" id="r-pw2" placeholder="Repita a password"></div>
+    <button class="btn btn-primary btn-full" onclick="doRegister()">Criar Conta</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px;font-size:.82rem" onclick="showScreen('login-screen')">← Já tenho conta</button>
+  </div>
+</div>
+
+<!-- FORGOT -->
+<div id="forgot-screen" class="screen">
+  <div class="auth-card">
+    <div class="logo">🔑</div>
+    <h1>Recuperar Password</h1>
+    <p class="subtitle">Enviaremos um link de recuperação</p>
+    <div class="alert alert-error" id="forgot-err"></div>
+    <div class="alert alert-success" id="forgot-ok"></div>
+    <div class="form-group"><label>Email</label><input type="email" id="f-email" placeholder="email@exemplo.com"></div>
+    <button class="btn btn-primary btn-full" onclick="doForgot()">Enviar Link</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px;font-size:.82rem" onclick="showScreen('login-screen')">← Voltar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" class="screen">
+  <header>
+    <span class="brand">🏢 CondoMeet</span>
+    <span class="condo-name" id="hdr-condo"></span>
+    <span class="user-chip" id="hdr-user"></span>
+    <button class="btn-icon" title="Perfil" onclick="openProfileModal()">👤</button>
+    <button class="btn-icon" id="hdr-admin-btn" title="Administração" onclick="openAdminModal()" style="display:none">⚙️</button>
+    <button class="btn-icon" title="Sair" onclick="doLogout()">🚪</button>
+  </header>
+
+  <!-- NAV -->
+  <nav class="nav-tabs">
+    <button class="nav-tab active" id="nav-meetings" onclick="switchTab('meetings')">📅 Reuniões</button>
+    <button class="nav-tab" id="nav-quotas" onclick="switchTab('quotas')">💶 Quotas <span class="tab-badge" id="quotas-badge" style="display:none">0</span></button>
+    <button class="nav-tab" id="nav-issues" onclick="switchTab('issues')">🔧 Ocorrências <span class="tab-badge" id="issues-badge" style="display:none">0</span></button>
+    <button class="nav-tab" id="nav-cleaning" onclick="switchTab('cleaning')">🧹 Limpezas</button>
+    <button class="nav-tab" id="nav-utilities" onclick="switchTab('utilities')">💡 Agua &amp; Luz</button>
+    <button class="nav-tab" id="nav-summary" onclick="switchTab('summary')">📊 Resumo</button>
+    <button class="nav-tab" id="nav-agenda" onclick="switchTab('agenda')">🗳️ Ordem do Dia <span class="tab-badge" id="agenda-badge" style="display:none">0</span></button>
+  </nav>
+
+  <div class="app-body">
+    <div class="app-main" id="app-main">
+
+      <!-- MEETINGS TAB -->
+      <div id="tab-meetings">
+        <div class="online-wrap" id="online-wrap" style="display:none">
+          <span style="font-size:.73rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;white-space:nowrap">🟢 Online</span>
+          <div id="online-chips" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-label">🏆 Melhores Horários</div>
+          <div class="top-grid" id="top-grid">
+            <div class="empty-state" style="padding:6px 0;font-size:.85rem;text-align:left;color:var(--muted)">Ainda sem disponibilidades.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="font-size:.9rem;font-weight:700;margin-bottom:12px">📅 Calendário</h2>
+          <div class="mini-cal" id="mini-cal"></div>
+          <p class="cal-hint" id="cal-hint">Clique numa data para ver disponibilidades. Datas a verde têm respostas.</p>
+        </div>
+
+        <div class="card" id="avail-panel" style="display:none">
+          <h2 style="font-size:.9rem;font-weight:700;margin-bottom:3px" id="avail-title"></h2>
+          <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px" id="avail-subtitle"></p>
+          <div class="slots-grid" id="slots-grid"></div>
+        </div>
+      </div>
+
+      <!-- QUOTAS TAB -->
+      <div id="tab-quotas" style="display:none">
+        <div class="stats-grid" id="quota-stats"></div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <button class="btn btn-secondary btn-sm" onclick="quotaNavYear(-1)">&#8249;</button>
+              <span style="font-weight:700;font-size:1rem" id="quota-year-label"></span>
+              <button class="btn btn-secondary btn-sm" onclick="quotaNavYear(1)">&#8250;</button>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary btn-sm" id="btn-add-fraction" onclick="openFractionModal()" style="display:none">+ Fração</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="quota-table" id="quota-table">
+              <thead><tr id="quota-thead"></tr></thead>
+              <tbody id="quota-tbody"></tbody>
+              <tfoot><tr id="quota-tfoot"></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ISSUES TAB -->
+      <div id="tab-issues" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" id="ifilter-open" onclick="setIssueFilter('open')" style="background:var(--primary);color:#fff">Abertas</button>
+            <button class="btn btn-secondary btn-sm" id="ifilter-in_progress" onclick="setIssueFilter('in_progress')">Em curso</button>
+            <button class="btn btn-secondary btn-sm" id="ifilter-resolved" onclick="setIssueFilter('resolved')">Resolvidas</button>
+            <button class="btn btn-secondary btn-sm" id="ifilter-all" onclick="setIssueFilter('all')">Todas</button>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openNewIssueModal()">+ Nova Ocorrência</button>
+        </div>
+        <div id="issues-list"></div>
+      </div>
+
+      <!-- CLEANING TAB -->
+      <div id="tab-cleaning" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <button class="btn btn-secondary btn-sm" onclick="cleaningNavYear(-1)">&#8249;</button>
+          <span style="font-weight:700;font-size:1rem" id="cleaning-year-label"></span>
+          <button class="btn btn-secondary btn-sm" onclick="cleaningNavYear(1)">&#8250;</button>
+        </div>
+        <div class="stats-grid" id="cleaning-stats"></div>
+        <div class="card">
+          <div style="overflow-x:auto">
+            <table class="quota-table">
+              <thead><tr><th style="text-align:left">Mes</th><th>Limpezas</th><th>Total pago</th><th>Datas</th><th></th></tr></thead>
+              <tbody id="cleaning-tbody"></tbody>
+              <tfoot><tr id="cleaning-tfoot"></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- UTILITIES TAB -->
+      <div id="tab-utilities" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <button class="btn btn-secondary btn-sm" onclick="utilitiesNavYear(-1)">&#8249;</button>
+          <span style="font-weight:700;font-size:1rem" id="utilities-year-label"></span>
+          <button class="btn btn-secondary btn-sm" onclick="utilitiesNavYear(1)">&#8250;</button>
+        </div>
+        <div class="stats-grid" id="utilities-stats"></div>
+        <div class="card">
+          <div style="overflow-x:auto">
+            <table class="quota-table">
+              <thead><tr><th style="text-align:left">Mes</th><th>Agua (EUR)</th><th>Luz (EUR)</th><th>Total</th><th>Nota</th><th></th></tr></thead>
+              <tbody id="utilities-tbody"></tbody>
+              <tfoot><tr id="utilities-tfoot"></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUMMARY TAB -->
+      <div id="tab-summary" style="display:none">
+        <div class="stats-grid" id="summary-stats"></div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+            <div style="font-weight:700;font-size:.95rem">💳 Movimentos de Caixa</div>
+            <button class="btn btn-primary btn-sm" id="btn-add-cashbook" onclick="openCashbookModal(null)" style="display:none">+ Movimento</button>
+          </div>
+          <div id="cashbook-list"></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+            <div style="font-weight:700;font-size:.95rem">📈 Resumo Anual</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="btn btn-secondary btn-sm" onclick="summaryNavYear(-1)">&#8249;</button>
+              <span style="font-weight:700" id="summary-year-label"></span>
+              <button class="btn btn-secondary btn-sm" onclick="summaryNavYear(1)">&#8250;</button>
+            </div>
+          </div>
+          <div id="summary-annual"></div>
+        </div>
+      </div>
+
+      <!-- AGENDA TAB -->
+      <div id="tab-agenda" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm" id="afilter-open" onclick="setAgendaFilter('open')" style="background:var(--primary);color:#fff">Em aberto</button>
+            <button class="btn btn-secondary btn-sm" id="afilter-voting" onclick="setAgendaFilter('voting')">Em votacao</button>
+            <button class="btn btn-secondary btn-sm" id="afilter-decided" onclick="setAgendaFilter('decided')">Decididos</button>
+            <button class="btn btn-secondary btn-sm" id="afilter-all" onclick="setAgendaFilter('all')">Todos</button>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAgendaModal()">+ Novo Topico</button>
+        </div>
+        <div id="agenda-list"></div>
+      </div>
+
+    </div>
+
+    <!-- SIDE PANEL -->
+    <div class="side-panel" id="side-panel">
+      <div class="sp-header">
+        <button class="sp-close" onclick="closeSidePanel()">✕</button>
+        <h3 id="sp-title"></h3>
+        <div class="sp-sub" id="sp-sub"></div>
+      </div>
+      <div class="sp-body" id="sp-body"></div>
+      <div class="sp-footer" id="sp-footer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="overlay" id="profile-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('profile-modal')">✕</button>
+    <h2>👤 O Meu Perfil</h2>
+    <div class="alert alert-error" id="profile-err"></div>
+    <div class="alert alert-success" id="profile-ok"></div>
+    <div class="form-group"><label>Nome completo</label><input type="text" id="p-name"></div>
+    <div class="form-group"><label>Fração</label><input type="text" id="p-fraction"></div>
+    <div class="form-group"><label>Email</label><input type="email" id="p-email" disabled style="background:#f7fafc;color:var(--muted)"></div>
+    <div class="form-group"><label>Role</label><div id="p-role-display" style="margin-top:4px"></div></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+    <div class="form-group"><label>Nova password (opcional)</label><input type="password" id="p-pw" placeholder="Deixe vazio para não alterar"></div>
+    <button class="btn btn-primary btn-full" onclick="saveProfile()">Guardar</button>
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="overlay" id="admin-modal">
+  <div class="modal modal-lg">
+    <button class="modal-close" onclick="closeModal('admin-modal')">✕</button>
+    <h2>⚙️ Gestão de Membros</h2>
+    <div id="users-loading" style="color:var(--muted);font-size:.85rem;padding:8px 0">A carregar...</div>
+    <div id="users-list" style="display:none"></div>
+  </div>
+</div>
+
+<!-- FRACTION MODAL -->
+<div class="overlay" id="fraction-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('fraction-modal')">✕</button>
+    <h2 id="fraction-modal-title">➕ Nova Fração</h2>
+    <div class="alert alert-error" id="fraction-err"></div>
+    <div class="input-row">
+      <div class="form-group"><label>Fração</label><input type="text" id="fr-fraction" placeholder="Ex: A, 1Esq, 3B"></div>
+      <div class="form-group"><label>Quota mensal (€)</label><input type="number" id="fr-amount" placeholder="27.77" min="0" step="0.01"></div>
+    </div>
+    <div class="form-group"><label>Descrição (opcional)</label><input type="text" id="fr-desc" placeholder="Ex: 1º Andar Direito — T3"></div>
+    <div class="form-group"><label>Ordem de exibição</label><input type="number" id="fr-order" placeholder="1" min="0"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-primary btn-full" onclick="saveFraction()">Guardar</button>
+      <button class="btn btn-danger" id="fr-delete-btn" onclick="deleteFraction()" style="display:none">🗑️</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT CELL MODAL -->
+<div class="overlay" id="payment-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('payment-modal')">✕</button>
+    <h2 id="payment-modal-title">💶 Pagamento</h2>
+    <div class="alert alert-error" id="payment-err"></div>
+    <div id="pm-admin-view">
+      <div class="form-group"><label>Estado</label>
+        <select id="pm-status">
+          <option value="paid">✓ Paga</option>
+          <option value="pending">— Pendente</option>
+          <option value="overdue">⚠ Em atraso</option>
+          <option value="payment_requested">🕐 A confirmar</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Nota (opcional)</label><input type="text" id="pm-note" placeholder="Ex: Pago via MB Way"></div>
+      <div id="pm-confirm-btns" style="display:none;gap:8px;margin-bottom:12px">
+        <button class="btn btn-primary btn-full" style="background:var(--success);flex:1" onclick="confirmPaymentRequest()">✓ Confirmar pagamento</button>
+        <button class="btn btn-secondary btn-full" style="flex:1;color:var(--danger)" onclick="rejectPaymentRequest()">✕ Rejeitar</button>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="savePaymentCell()">Guardar</button>
+    </div>
+    <div id="pm-resident-view" style="display:none">
+      <div id="pm-resident-status" style="text-align:center;padding:12px 0;font-size:1.1rem"></div>
+      <div id="pm-request-btn-wrap">
+        <button class="btn btn-primary btn-full" onclick="requestPayment()">📤 Solicitar confirmação de pagamento</button>
+      </div>
+      <div id="pm-requested-msg" style="display:none;text-align:center;color:var(--muted);font-size:.9rem;padding:8px 0">Pedido enviado. Aguarda confirmação do administrador.</div>
+    </div>
+  </div>
+</div>
+
+<!-- AGENDA NEW TOPIC MODAL -->
+<div class="overlay" id="agenda-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('agenda-modal')">&#x2715;</button>
+    <h2>🗳️ Novo Topico</h2>
+    <div class="alert alert-error" id="agenda-err"></div>
+    <div class="form-group"><label>Titulo</label><input type="text" id="ag-title" placeholder="Ex: Pintura do edificio"></div>
+    <div class="form-group"><label>Descricao (opcional)</label><textarea id="ag-desc" placeholder="Detalhe o topico..."></textarea></div>
+    <button class="btn btn-primary btn-full" onclick="saveAgendaTopic()">Submeter</button>
+  </div>
+</div>
+
+<!-- AGENDA DETAIL MODAL -->
+<div class="overlay" id="agenda-detail-modal">
+  <div class="modal modal-lg">
+    <button class="modal-close" onclick="closeModal('agenda-detail-modal')">&#x2715;</button>
+    <div id="agenda-detail-content"></div>
+  </div>
+</div>
+
+<!-- INITIAL BALANCE MODAL -->
+<div class="overlay" id="init-balance-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('init-balance-modal')">&#x2715;</button>
+    <h2>Saldo Inicial em Caixa</h2>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px">Valor que o condominio ja tinha em caixa antes de comecar a usar o CondoMeet.</p>
+    <div class="alert alert-error" id="init-bal-err"></div>
+    <div class="form-group"><label>Valor (EUR)</label><input type="number" id="init-bal-value" min="0" step="0.01" placeholder="0.00"></div>
+    <button class="btn btn-primary btn-full" onclick="saveInitialBalance()">Guardar</button>
+  </div>
+</div>
+
+<!-- CASHBOOK MODAL -->
+<div class="overlay" id="cashbook-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('cashbook-modal')">&#x2715;</button>
+    <h2 id="cashbook-modal-title">Novo Movimento</h2>
+    <div class="alert alert-error" id="cashbook-err"></div>
+    <div class="form-group"><label>Tipo</label>
+      <select id="cb-type">
+        <option value="income">Entrada</option>
+        <option value="expense">Saida</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Descricao</label><input type="text" id="cb-desc" placeholder="Ex: Quotas maio, Limpeza..."></div>
+    <div class="input-row">
+      <div class="form-group"><label>Valor (EUR)</label><input type="number" id="cb-amount" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="form-group"><label>Data</label><input type="date" id="cb-date"></div>
+    </div>
+    <div class="form-group"><label>Categoria (opcional)</label>
+      <select id="cb-category">
+        <option value="">-- Sem categoria --</option>
+        <option value="quotas">Quotas</option>
+        <option value="cleaning">Limpezas</option>
+        <option value="water">Agua</option>
+        <option value="electricity">Eletricidade</option>
+        <option value="maintenance">Manutencao</option>
+        <option value="other">Outro</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary btn-full" onclick="saveCashbook()">Guardar</button>
+      <button class="btn btn-danger" id="cb-delete-btn" onclick="deleteCashbook()" style="display:none">Apagar</button>
+    </div>
+  </div>
+</div>
+
+<!-- UTILITY BILL MODAL -->
+<div class="overlay" id="utility-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('utility-modal')">&#x2715;</button>
+    <h2 id="utility-modal-title">Agua &amp; Luz</h2>
+    <div class="alert alert-error" id="utility-err"></div>
+    <div class="input-row">
+      <div class="form-group"><label>Agua (EUR)</label><input type="number" id="ut-water" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="form-group"><label>Luz (EUR)</label><input type="number" id="ut-elec" min="0" step="0.01" placeholder="0.00"></div>
+    </div>
+    <div class="form-group"><label>Nota (opcional)</label><input type="text" id="ut-note" placeholder="Ex: Fatura Endesa"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary btn-full" onclick="saveUtilityBill()">Guardar</button>
+      <button class="btn btn-danger" id="ut-delete-btn" onclick="deleteUtilityBill()" style="display:none">Apagar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLEANING MONTH MODAL -->
+<div class="overlay" id="cleaning-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('cleaning-modal')">&#x2715;</button>
+    <h2 id="cleaning-modal-title">Limpezas</h2>
+    <div id="cleaning-entries-list" style="margin-bottom:14px"></div>
+    <div id="cleaning-add-form" style="display:none;border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+      <div class="alert alert-error" id="cleaning-err"></div>
+      <div class="input-row">
+        <div class="form-group"><label>Data</label><input type="date" id="cl-date"></div>
+        <div class="form-group"><label>Valor (EUR)</label><input type="number" id="cl-amount" min="0" step="0.01" placeholder="0.00"></div>
+      </div>
+      <div class="form-group"><label>Nota (opcional)</label><input type="text" id="cl-note" placeholder="Ex: Empresa XYZ"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-full" onclick="saveCleaningEntry()">Guardar</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('cleaning-add-form').style.display='none'">Cancelar</button>
+      </div>
+    </div>
+    <div id="cleaning-add-btn-wrap">
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('cleaning-add-form').style.display='';document.getElementById('cleaning-add-btn-wrap').style.display='none'">+ Adicionar limpeza</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW ISSUE MODAL -->
+<div class="overlay" id="issue-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('issue-modal')">✕</button>
+    <h2>🔧 Nova Ocorrência</h2>
+    <div class="alert alert-error" id="issue-err"></div>
+    <div class="form-group"><label>Título</label><input type="text" id="is-title" placeholder="Ex: Elevador avariado"></div>
+    <div class="form-group"><label>Descrição (opcional)</label><textarea id="is-desc" placeholder="Descreva o problema em detalhe..."></textarea></div>
+    <button class="btn btn-primary btn-full" onclick="saveNewIssue()">Submeter Ocorrência</button>
+  </div>
+</div>
+
+<!-- ISSUE DETAIL MODAL -->
+<div class="overlay" id="issue-detail-modal">
+  <div class="modal modal-lg">
+    <button class="modal-close" onclick="closeModal('issue-detail-modal')">✕</button>
+    <div id="issue-detail-content"></div>
+  </div>
+</div>
+
+<!-- LOADING + TOAST -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-box"><div class="spinner-lg"></div><div class="loading-msg" id="loading-msg">A carregar...</div></div>
+</div>
+<div id="toast"></div>
+
+<!-- JS: ordem importa — config e state antes dos módulos, app.js por último -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/state.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/meetings.js"></script>
+<script src="js/quotas.js"></script>
+<script src="js/issues.js"></script>
+<script src="js/cleaning.js"></script>
+<script src="js/utilities.js"></script>
+<script src="js/agenda.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
