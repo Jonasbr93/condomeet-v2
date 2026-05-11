@@ -3,11 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <script>
-  // GitHub Pages SPA redirect trick
-  // Guarda o path completo em sessionStorage e redireciona para a raiz
-  var path = location.pathname + location.search + location.hash;
-  sessionStorage.setItem('spa_redirect', path);
-  location.replace('/condomeet-v2/');
+  // Guarda o path completo (ex: /condomeet-v2/c/edificio-solar/)
+  // e redireciona para a raiz do GitHub Pages
+  sessionStorage.setItem('spa_redirect', location.pathname + location.search + location.hash);
+  location.replace('/condomeet-v2/index.html');
 </script>
 </head>
 <body></body>

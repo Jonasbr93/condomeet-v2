@@ -1,8 +1,8 @@
 // ── Slug / routing ────────────────────────────────────────────
 
 function getSlugFromUrl() {
-  // Espera URLs do tipo /c/:slug ou /c/:slug/qualquer-coisa
-  const m = location.pathname.match(/^\/c\/([a-z0-9-]+)/);
+  // Funciona com /c/:slug ou /subpath/c/:slug (ex: GitHub Pages /condomeet-v2/c/slug)
+  const m = location.pathname.match(/\/c\/([a-z0-9-]+)/);
   return m ? m[1] : null;
 }
 
@@ -26,12 +26,17 @@ function applyBranding(condo) {
 
 async function loadFractionsForRegister() {
   if (!CFG_CONDO_ID) return;
+  // Usa a função RPC pública que não requer autenticação
   const { data } = await sb.from('quota_fractions')
-    .select('fraction, description')
+    .select('fraction, description, sort_order')
     .eq('condominium_id', CFG_CONDO_ID)
     .order('sort_order');
   const sel = $i('r-fraction');
-  if (!sel || !data?.length) return;
+  if (!sel) return;
+  if (!data?.length) {
+    sel.innerHTML = '<option value="">Sem frações disponíveis</option>';
+    return;
+  }
   sel.innerHTML = data.map(f =>
     `<option value="${esc(f.fraction)}">${esc(f.fraction)}${f.description ? ' — ' + esc(f.description) : ''}</option>`
   ).join('');
