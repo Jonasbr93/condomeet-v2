@@ -1,9 +1,13 @@
 // ── Slug / routing ────────────────────────────────────────────
 
 function getSlugFromUrl() {
-  // Funciona com /c/:slug ou /subpath/c/:slug (ex: GitHub Pages /condomeet-v2/c/slug)
-  const m = location.pathname.match(/\/c\/([a-z0-9-]+)/);
-  return m ? m[1] : null;
+  // Suporta:
+  //   hash:  #c/edificio-solar  (GitHub Pages — sem 404)
+  //   path:  /c/edificio-solar  (servidor próprio)
+  const fromHash = location.hash.match(/^#c\/([a-z0-9-]+)/);
+  if (fromHash) return fromHash[1];
+  const fromPath = location.pathname.match(/\/c\/([a-z0-9-]+)/);
+  return fromPath ? fromPath[1] : null;
 }
 
 async function resolveSlug(slug) {
