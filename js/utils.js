@@ -3,6 +3,7 @@ const $i = id => document.getElementById(id);
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   $i(id).classList.add('active');
+  if (id === 'register-screen') loadFractionsForRegister();
 }
 
 function showLoading(m = 'A carregar...'){
