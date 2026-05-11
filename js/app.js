@@ -188,8 +188,19 @@ async function init() {
       return;
     }
   }
-  // Se não há slug no URL (ex: acesso direto ao index.html durante desenvolvimento),
-  // a app mostra o login mas CFG_CONDO_ID ficará null até ser definido noutra via
+  // Se não há slug no URL, mostrar página de entrada
+  if (!slug) {
+    document.body.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#f0faf4;font-family:sans-serif">
+        <div style="text-align:center;padding:40px;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);max-width:360px;width:90%">
+          <div style="font-size:3rem;margin-bottom:16px">🏢</div>
+          <h2 style="margin:0 0 8px;color:#2d6a4f">CondoApp</h2>
+          <p style="color:#666;font-size:.9rem;margin-bottom:24px">Aceda através do link do seu condomínio.</p>
+          <p style="color:#999;font-size:.8rem">Exemplo:<br><code style="background:#f0faf4;padding:4px 8px;border-radius:6px">.../condomeet-v2/#c/edificio-solar</code></p>
+        </div>
+      </div>`;
+    return;
+  }
 
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) await bootSession(session);
