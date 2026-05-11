@@ -1,8 +1,11 @@
-// Supabase connection
-const CFG_URL      = 'https://nvyxskcwtcqsjpbdoaha.supabase.co';
-const CFG_KEY      = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52eXhza2N3dGNxc2pwYmRvYWhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMDA5MDAsImV4cCI6MjA5Mzc3NjkwMH0.R0uVQulBLUljAfQ-SlFZe7NLj9EJIJTZ4qKqUxJJzwo';
-const CFG_CONDO_ID = '6fde2f8c-ac01-4677-a2e6-6f9beaea47f3';
-const CFG_ADMIN_EMAIL = '';
+// Supabase connection — projeto prod multi-tenant
+const CFG_URL = 'https://kduhyroeubmzkxffavhb.supabase.co';
+const CFG_KEY = 'sb_publishable_HzyViEVan1e1A_SVFPk_lA_EEQXlZYD';
+
+// Resolvido dinamicamente em runtime a partir do slug na URL (/c/:slug/...)
+// Não há mais CFG_CONDO_ID fixo — ver resolveSlug() em app.js
+let CFG_SLUG     = null;  // slug atual (ex: "edificio-solar")
+let CFG_CONDO_ID = null;  // uuid do condomínio, preenchido após resolveSlug()
 
 // Utility
 function ph(n){ return String(n).padStart(2,'0'); }
