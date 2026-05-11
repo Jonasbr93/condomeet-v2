@@ -6,6 +6,16 @@
 <title>CondoMeet</title>
 <meta name="version" content="2026-05-11">
 <link rel="stylesheet" href="style.css">
+<script>
+  // Restaurar path após redirect do 404.html (GitHub Pages SPA trick)
+  (function(){
+    var redirect = sessionStorage.getItem('spa_redirect');
+    if (redirect) {
+      sessionStorage.removeItem('spa_redirect');
+      history.replaceState(null, '', redirect);
+    }
+  })();
+</script>
 </head>
 <body>
 
@@ -31,12 +41,15 @@
 <div id="register-screen" class="screen">
   <div class="auth-card">
     <div class="logo">🏢</div>
-    <h1>Criar Conta</h1>
+    <h1 id="reg-condo-name">Criar Conta</h1>
     <p class="subtitle">Registe-se no condomínio</p>
     <div class="alert alert-error" id="reg-err"></div>
-    <div class="input-row">
-      <div class="form-group"><label>Nome completo</label><input type="text" id="r-name" placeholder="João Silva"></div>
-      <div class="form-group"><label>Fração</label><input type="text" id="r-fraction" placeholder="3B"></div>
+    <div class="form-group"><label>Nome completo</label><input type="text" id="r-name" placeholder="João Silva"></div>
+    <div class="form-group">
+      <label>Fração</label>
+      <select id="r-fraction">
+        <option value="">A carregar frações...</option>
+      </select>
     </div>
     <div class="form-group"><label>Email</label><input type="email" id="r-email" placeholder="email@exemplo.com"></div>
     <div class="form-group"><label>Password</label><input type="password" id="r-pw" placeholder="Mínimo 6 caracteres"></div>

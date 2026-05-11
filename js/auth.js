@@ -8,15 +8,19 @@ async function doLogin(){
 }
 
 async function doRegister(){
-  const name = $i('r-name').value.trim(), fraction = $i('r-fraction').value.trim().toUpperCase();
-  const email = $i('r-email').value.trim(), pw = $i('r-pw').value, pw2 = $i('r-pw2').value;
+  const name     = $i('r-name').value.trim();
+  const fraction = $i('r-fraction').value.trim();
+  const email    = $i('r-email').value.trim();
+  const pw       = $i('r-pw').value;
+  const pw2      = $i('r-pw2').value;
   clearAlert('reg-err');
   if (!name)      { showAlert('reg-err','Insira o seu nome.'); return; }
-  if (!fraction)  { showAlert('reg-err','Insira a sua fração.'); return; }
+  if (!fraction)  { showAlert('reg-err','Selecione a sua fração.'); return; }
   if (!email)     { showAlert('reg-err','Insira o seu email.'); return; }
   if (pw.length < 6){ showAlert('reg-err','Password mínimo 6 caracteres.'); return; }
   if (pw !== pw2) { showAlert('reg-err','As passwords não coincidem.'); return; }
 
+  // Verificar se a fração ainda tem vagas (max 2 utilizadores por fração)
   showLoading('A verificar fração...');
   const {data: check, error: checkErr} = await sb.rpc('check_fraction_registration', {p_condo_id: CFG_CONDO_ID, p_fraction: fraction});
   if (checkErr || !check){
@@ -27,16 +31,15 @@ async function doRegister(){
   if (!check.ok){
     hideLoading();
     if (check.error === 'fraction_not_found')
-      showAlert('reg-err', `A fração "${fraction}" não existe neste condomínio. Verifique a letra da sua fração ou contacte o administrador.`);
+      showAlert('reg-err', `A fração "${fraction}" não existe neste condomínio.`);
     else if (check.error === 'fraction_full')
-      showAlert('reg-err', `A fração "${fraction}" já atingiu o limite de 2 utilizadores registados. Contacte o administrador se precisar de acesso.`);
+      showAlert('reg-err', `A fração "${fraction}" já atingiu o limite de 2 utilizadores. Contacte o administrador.`);
     else
       showAlert('reg-err','Não foi possível registar. Contacte o administrador.');
     return;
   }
 
-  const role = (CFG_ADMIN_EMAIL && email === CFG_ADMIN_EMAIL) ? 'admin' : 'resident';
-  const meta = { full_name: name, fraction, role, condominium_id: CFG_CONDO_ID };
+  const meta = { full_name: name, fraction, role: 'resident', condominium_id: CFG_CONDO_ID };
   showLoading('A criar conta...');
   const {error} = await sb.auth.signUp({email, password: pw, options: {data: meta}});
   if (error){ hideLoading(); showAlert('reg-err', xlateErr(error.message)); return; }

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<script>
+  // GitHub Pages SPA redirect trick
+  // Guarda o path completo em sessionStorage e redireciona para a raiz
+  var path = location.pathname + location.search + location.hash;
+  sessionStorage.setItem('spa_redirect', path);
+  location.replace('/condomeet-v2/');
+</script>
+</head>
+<body></body>
+</html>

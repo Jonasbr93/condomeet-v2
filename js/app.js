@@ -19,6 +19,22 @@ function applyBranding(condo) {
   root.style.setProperty('--primary-d', condo.dark_color      || '#1b4332');
   root.style.setProperty('--primary-xl',condo.light_color     || '#d8f3dc');
   if (condo.app_name) document.title = condo.app_name;
+  // Mostrar nome do condomínio no ecrã de registo
+  const regTitle = $i('reg-condo-name');
+  if (regTitle) regTitle.textContent = condo.name;
+}
+
+async function loadFractionsForRegister() {
+  if (!CFG_CONDO_ID) return;
+  const { data } = await sb.from('quota_fractions')
+    .select('fraction, description')
+    .eq('condominium_id', CFG_CONDO_ID)
+    .order('sort_order');
+  const sel = $i('r-fraction');
+  if (!sel || !data?.length) return;
+  sel.innerHTML = data.map(f =>
+    `<option value="${esc(f.fraction)}">${esc(f.fraction)}${f.description ? ' — ' + esc(f.description) : ''}</option>`
+  ).join('');
 }
 
 // ── Tabs ──────────────────────────────────────────────────────
@@ -154,6 +170,7 @@ async function init() {
       CFG_CONDO_ID = condo.id;
       currentCondo = condo;
       applyBranding(condo);
+      loadFractionsForRegister();
     } else {
       // Slug desconhecido — mostrar erro
       document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666">
